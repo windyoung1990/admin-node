@@ -1,5 +1,5 @@
+import formidable from 'formidable'
 import AddressComponent from '../../prototype/addressComponent'
-
 import UserInfoModel from '../../models/userInfo/userInfo';
 import UserModel from '../../models/user/user';
 import crypto from 'crypto'
@@ -11,26 +11,14 @@ class User extends AddressComponent {
         this.encryption = this.encryption.bind(this);
     }
     async login(req, res, next) {
-        const cap = req.cookies.cap;
-        if (!cap) {
-            console.log('验证码失效')
-			res.send({
-				status: 0,
-				type: 'ERROR_CAPTCHA',
-				message: '验证码失效',
-			})
-			return
-        }
         const form = new formidable.IncomingForm();
         form.parse(req, async(err, fields, files) => {
-            const {username, password, captcha_code} = fields;
+            const {username, password} = fields;
             try{
 				if (!username) {
 					throw new Error('用户名参数错误');
 				}else if(!password){
 					throw new Error('密码参数错误');
-				}else if(!captcha_code){
-					throw new Error('验证码参数错误');
 				}
 			}catch(err){
 				console.log('登陆参数错误', err);
@@ -41,23 +29,15 @@ class User extends AddressComponent {
 				})
 				return
             }
-            if (cap.toString() !== captcha_code.toString()) {
-				res.send({
-					status: 0,
-					type: 'ERROR_CAPTCHA',
-					message: '验证码不正确',
-				})
-				return
-            }
             const newpassword = this.encryption(password);
             try {
                 const user = await UserModel.findOne({username});
                 if (!user) {
                     const user_id = await this.getId('user_id');
-					const cityInfo = await this.guessPosition(req);
+					// const cityInfo = await this.guessPosition(req);
 					const registe_time = dtime().format('YYYY-MM-DD HH:mm');
 					const newUser = {username, password: newpassword, user_id};
-					const newUserInfo = {username, user_id, id: user_id, city: cityInfo.city, registe_time, };
+					const newUserInfo = {username, user_id, id: user_id, registe_time, };
 					UserModel.create(newUser);
 					const createUser = new UserInfoModel(newUserInfo);
 					const userinfo = await createUser.save();
@@ -75,7 +55,11 @@ class User extends AddressComponent {
                 } else {
                     req.session.user_id = user.user_id;
 					const userinfo = await UserInfoModel.findOne({user_id: user.user_id}, '-_id');
-					res.send(userinfo) 
+					res.send({
+						status: 200,
+						message: 'success',
+						userInfo: userinfo
+					}) 
                 }
             }catch (err) {
                 console.log('用户登陆失败', err);

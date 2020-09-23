@@ -1,8 +1,8 @@
 import express from 'express';
-import db from './mongodb/db.js';
+import db from './src/mongodb/db.js';
 // import config from 'config-lite';
 const config = require('./config/default')
-import router from './routes/index.js';
+import router from './src/routes/index.js';
 import cookieParser from 'cookie-parser'
 import session from 'express-session';
 import connectMongo from 'connect-mongo';

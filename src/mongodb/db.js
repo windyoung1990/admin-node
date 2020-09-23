@@ -1,7 +1,7 @@
 'use strict';
 import mongoose from 'mongoose';
 // import config from 'config-lite';
-const config = require('../config/default')
+const config = require('../../config/default')
 
 import chalk from 'chalk';
 mongoose.connect(config.url);

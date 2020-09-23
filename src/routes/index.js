@@ -1,4 +1,4 @@
 import user from './user';
 export default (app) => {
-    app.use('/user', user);
+    app.use('/api/user', user);
 }
